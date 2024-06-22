@@ -21,7 +21,7 @@ const schema = buildSchema(`
 // The root provides a resolver function for each API endpoint
 const root = {
   getTitle({content}) {
-    return `title: \"${content};\"` 
+    return `title: "${content};"` 
   },
   getSubtitle({content}){
     return `subtitle: ${content};`
@@ -54,4 +54,4 @@ app.get('/', (req,res) => {
     res.end(ruruHTML({endpoint: '/graphql'}))
 }) 
 
-app.listen(4000)
+app.listen(3000)
