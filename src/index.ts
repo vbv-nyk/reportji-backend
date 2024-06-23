@@ -7,7 +7,7 @@ import express from 'express';
 import session from 'express-session'
 import passport from 'passport'
 import http from 'http';
-import {router as login} from './auth/login.js'
+import {router as login, router} from './auth/login.js'
 import cors from 'cors';
 import { typeDefs, } from './graphql/schema.js';
 import {resolvers } from './graphql/resolver.js'
@@ -50,7 +50,7 @@ app.use(express.json())
    store: new pgSession({
     pool: pool,
    }),
-    secret: 'Remeber To Setup DOTENV for now it is alksdjalksjd12312#@!',
+    secret: process.env.EXPRESS_SESSION_PASSWORD,
     resave: false,
     saveUninitialized: true,
     maxAge: 1000 * 60 * 60 * 24 * 30
@@ -75,3 +75,4 @@ app.use(
 // Modified server startup
 await new Promise<void>((resolve) => httpServer.listen({ port: 4000 }, resolve));
 console.log(`🚀 Server ready at http://localhost:4000/`);
+  

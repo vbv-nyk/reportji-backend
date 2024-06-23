@@ -2,6 +2,7 @@
 import passport from "passport" 
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import 'dotenv/config';
+ 
 
 export const initializePassport = () => {
   passport.use(new GoogleStrategy({
@@ -10,7 +11,6 @@ export const initializePassport = () => {
     callbackURL: process.env.GOOGLE_SUCCESS_CALLBACK_URI
   },
   function(accessToken, refreshToken, profile, cb) {
-    console.log(profile);
     return cb(null, profile);
   }));
 
