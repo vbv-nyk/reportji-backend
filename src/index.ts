@@ -1,41 +1,67 @@
-import express from "express"
-import { ApolloServer } from "apollo-server-express";
+// npm install @apollo/server express graphql cors
+import { ApolloServer } from '@apollo/server';
+import { expressMiddleware } from '@apollo/server/express4';
+import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
+import express from 'express';
 import session from 'express-session'
-import {typeDefs} from "./graphql/schema.js"
-import {resolvers} from "./graphql/resolver.js"
 import passport from 'passport'
-import { router as login} from './auth/login.js'
-import {initialize_passport} from './auth/passport.js'
-import 'dotenv/config.js'
+import http from 'http';
+import {router as login} from './auth/login.js'
+import cors from 'cors';
+import { typeDefs, } from './graphql/schema.js';
+import {resolvers } from './graphql/resolver.js'
+import {initializePassport, isAuthenticated} from './auth/passport.js'
 
-async function startApolloServer() {
-  const app = express();
-  app.use(session({
+interface MyContext {
+  token?: string;
+}
+
+// Required logic for integrating with Express
+const app = express();
+// Our httpServer handles incoming requests to our Express app.
+// Below, we tell Apollo Server to "drain" this httpServer,
+// enabling our servers to shut down gracefully.
+const httpServer = http.createServer(app);
+
+// Same ApolloServer initialization as before, plus the drain plugin
+// for our httpServer.
+const server = new ApolloServer<MyContext>({
+  typeDefs,
+  resolvers,
+  plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+});
+// Ensure we wait for our server to start
+await server.start();
+
+// Set up our Express middleware to handle CORS, body parsing,
+// and our expressMiddleware function.
+app.use(cors<cors.CorsRequest>());
+  initializePassport();
+
+app.use(express.json())
+ app.use(session({
     secret: 'Remeber To Setup DOTENV for now it is alksdjalksjd12312#@!',
     resave: false,
-    saveUninitialized: false,
-    cookie: { secure: true },
+    saveUninitialized: true,
     maxAge: 1000 * 60 * 60 * 24 * 30
   }));
   app.use(passport.initialize());
   app.use(passport.session());
-  initialize_passport();
 
-  const server = new ApolloServer({
-    typeDefs,
-    resolvers,
-  });
-  await server.start();
+  
 
-  server.applyMiddleware({ app });
+app.use('/auth', login);
+
+// All protected go from here
+app.use(isAuthenticated);
+app.use(
+  '/graphql',
+  expressMiddleware(server, {
+    context: async ({ req }) => ({ token: req }),
+  })
+)
 
 
-  app.use('/auth', login);
-
-
-  await new Promise(resolve => app.listen({ port: process.env.PORT }, () => {console.log(`Listening on port ${process.env.PORT}`)}));
-  console.log(`🚀 Server ready at http://localhost:${process.env.PORT}{server.graphqlPath}`);
-  return { server, app };
-}
-
-startApolloServer();
+// Modified server startup
+await new Promise<void>((resolve) => httpServer.listen({ port: 4000 }, resolve));
+console.log(`🚀 Server ready at http://localhost:4000/`);

@@ -1,43 +1,43 @@
+
 export const resolvers = {
   Query: {
-    Title: (parent, args, contextValue, info) => {
+    Title: (parent, args, context, info) => {
+      console.log("Authenticated User:", context.token.user);
       let { content } = args;
       return `title: \"${content}\";`;
     },
-    Subtitle: (parents, args, contextValue, info) => {
+    Subtitle: (parent, args, context, info) => {
       let { content } = args;
       return `subtitle: \"${content}\";`;
     },
-    Heading: (parents, args, contextValue, info) => {
+    Heading: (parent, args, context, info) => {
       let { content } = args;
       return `heading: \"${content}\";`;
     },
-    Author: (parents, args, contextValue, info) => {
+    Author: (parent, args, context, info) => {
       let { content } = args;
       return `author: \"${content}\";`;
     },
-    Date: (parents, args, contextValue, info) => {
+    Date: (parent, args, context, info) => {
       let { content } = args;
       return `date: \"${content}\";`;
     },
-    Paragraphs: (parents, args, contextValue, info) => {
+    Paragraphs: (parent, args, context, info) => {
       let { paragraphs } = args;
-      return `paragraphs: [\n  ${
-        paragraphs.map((paragraph) => `\"${paragraph}\"\n`) + "\n]"
-      }`;
+      return `paragraphs: [\n  ${paragraphs.map(paragraph => `\"${paragraph}\"\n`).join("")}]`;
     },
-    Items: (parents, args, contextValue, info) => {
+    Items: (parent, args, context, info) => {
       let { items } = args;
-      return `items: ${items.map((item) => `\"${item}\"\n`)}`;
+      return `items: ${items.map(item => `\"${item}\"\n`).join("")}`;
     },
-    Figures: (parents, args, contextValue, info) => {
+    Figures: (parent, args, context, info) => {
       let { figures } = args;
-      return `figures: ${figures.map((figure) => `\"${figure}\"\n`)}`;
+      return `figures: ${figures.map(figure => `\"${figure}\"\n`).join("")}`;
     },
-    Table: (parents, args, contextValue, info) => {
+    Table: (parent, args, context, info) => {
       let { rows } = args;
-      rows = rows.map((row) => "[" + row.map((cell) => `\"${cell}\"`) + "]\n");
-      return `differences: [\n${rows}\n]`;
+      rows = rows.map(row => "[" + row.map(cell => `\"${cell}\"`).join(", ") + "]\n");
+      return `differences: [\n${rows.join("")}]`;
     },
   },
-}
+};

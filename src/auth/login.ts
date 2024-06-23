@@ -1,13 +1,12 @@
 
-import express from 'express'
+import express from 'express';
+import passport from 'passport';
 
 export const router = express.Router();
-import passport from 'passport'
-
 
 router.get('/google', 
-  passport.authenticate('google', { scope: ['profile', 'email'] })
-)
+  passport.authenticate('google', { scope: ['profile'] })
+);
 
 router.get('/google/success',
   passport.authenticate('google', { failureRedirect: '/login' }),
