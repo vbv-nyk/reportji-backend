@@ -1,5 +1,6 @@
 // npm install @apollo/server express graphql cors
 import { ApolloServer } from '@apollo/server';
+import pg from 'pg'
 import { expressMiddleware } from '@apollo/server/express4';
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
 import express from 'express';
@@ -11,6 +12,12 @@ import cors from 'cors';
 import { typeDefs, } from './graphql/schema.js';
 import {resolvers } from './graphql/resolver.js'
 import {initializePassport, isAuthenticated} from './auth/passport.js'
+import {pool} from './database/postgres-config.js'
+
+import connectPgSimple from 'connect-pg-simple';
+
+
+const pgSession = connectPgSimple(session);
 
 interface MyContext {
   token?: string;
@@ -40,6 +47,9 @@ app.use(cors<cors.CorsRequest>());
 
 app.use(express.json())
  app.use(session({
+   store: new pgSession({
+    pool: pool,
+   }),
     secret: 'Remeber To Setup DOTENV for now it is alksdjalksjd12312#@!',
     resave: false,
     saveUninitialized: true,
@@ -52,7 +62,7 @@ app.use(express.json())
 
 app.use('/auth', login);
 
-// All protected go from here
+// All protected routes start from here
 app.use(isAuthenticated);
 app.use(
   '/graphql',
