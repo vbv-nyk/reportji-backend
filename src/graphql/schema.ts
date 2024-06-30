@@ -13,6 +13,11 @@ export const typeDefs =  gql`
     errMsg: String,
     tex: String
   }
+  type OutputPdf {
+    err: Boolean,
+    errMsg: String,
+    pdf: String
+  }
 
   type Query {
     UserDetails: User,
@@ -20,5 +25,7 @@ export const typeDefs =  gql`
   
   type Mutation {
     CreateTexFile(inputJi: String!): Output
+    CreatePDF(texFile: String): OutputPdf
+    
   }
 `;

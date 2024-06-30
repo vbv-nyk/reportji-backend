@@ -68,6 +68,7 @@ app.use("/auth", login);
 
 // All protected routes start from here
 // app.use(isAuthenticated);
+// 
 
 app.use(
   "/graphql",
