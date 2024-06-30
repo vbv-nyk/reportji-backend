@@ -30,8 +30,10 @@ export const initializePassport = () => {
 
 export const isAuthenticated = (req,res,next) => {
   if(req.isAuthenticated()) {
-    return next();
+    console.log("User is authenticated");
+    next();
   } else {
+    console.log("User is not authenticated");
     res.status(401).json({message: 'unauthorized'});
   }
 }
