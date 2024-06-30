@@ -42,8 +42,7 @@ export const resolvers = {
         execSync(
           `rm ${id}/output.aux ${id}/output.lof ${id}/output.log ${id}/output.toc ${id}/output.out`
         );
-        let data: string | Buffer = await fs.readFile(`${id}/output.pdf`);
-        data = JSON.stringify(data);
+        let data: string = await fs.readFile(`${id}/output.pdf`, {encoding: "base64"});
         return {
           err: false,
           errMsg: "None",
