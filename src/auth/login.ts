@@ -1,7 +1,7 @@
 import express from "express";
 import passport from "passport";
-import "dotenv/config";
-
+import {config} from 'dotenv'
+config({ path: `.env.${process.env.CURRENT_MODE}` });
 export const router = express.Router();
 
 router.get("/google", passport.authenticate("google", { scope: ["profile"] }));

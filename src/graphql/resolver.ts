@@ -7,9 +7,9 @@ export const resolvers = {
       try {
         const { inputJi } = args;
         const { id } = context.user;
-        fs.mkdir(`${id}`, { recursive: true });
-        await fs.writeFile(`${id}/input.ji`, inputJi, "utf-8");
-        execSync(`./main ${id}/input.ji`);
+        fs.mkdir(`outputs/${id}`, { recursive: true });
+        await fs.writeFile(`outputs/${id}/input.ji`, inputJi, "utf-8");
+        execSync(`./main outputs/${id}/input.ji`);
         const data = await fs.readFile("output.tex");
         const tex = data.toString();
         return {
@@ -31,18 +31,18 @@ export const resolvers = {
         const { texFile }: {texFile: string} = args;
         const { id } = context.user;
         if(texFile.length != 0) {
-          await fs.writeFile(`${id}/output.tex`, texFile, "utf-8");
+          await fs.writeFile(`outputs/${id}/output.tex`, texFile, "utf-8");
         }
         execSync(
-          `pdflatex -interaction=nonstopmode -output-directory=${id} output.tex `
+          `pdflatex -interaction=nonstopmode -output-directory=outputs/${id} output.tex `
         );
         execSync(
-          `pdflatex -interaction=nonstopmode -output-directory=${id} output.tex `
+          `pdflatex -interaction=nonstopmode -output-directory=outputs/${id} output.tex `
         );
         execSync(
-          `rm ${id}/output.aux ${id}/output.lof ${id}/output.log ${id}/output.toc ${id}/output.out`
+          `rm outputs/${id}/output.aux outputs/${id}/output.lof outputs/${id}/output.log outputs/${id}/output.toc outputs/${id}/output.out`
         );
-        let data: string = await fs.readFile(`${id}/output.pdf`, {encoding: "base64"});
+        let data: string = await fs.readFile(`outputs/${id}/output.pdf`, {encoding: "base64"});
         return {
           err: false,
           errMsg: "None",

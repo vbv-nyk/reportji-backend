@@ -13,6 +13,8 @@ import { typeDefs } from "./graphql/schema.js";
 import { resolvers } from "./graphql/resolver.js";
 import { initializePassport, isAuthenticated } from "./auth/passport.js";
 import { pool } from "./database/postgres-config.js";
+import { config } from 'dotenv';
+config({ path: `.env.${process.env.CURRENT_MODE}` });
 
 import connectPgSimple from "connect-pg-simple";
 
@@ -60,7 +62,7 @@ app.use(passport.session());
 
 app.use(
   cors<cors.CorsRequest>({
-    origin: "http://localhost:3000",
+    origin: process.env.CLIENT_URL,
     credentials: true,
   })
 );
@@ -82,4 +84,4 @@ app.use(
 await new Promise<void>((resolve) =>
   httpServer.listen({ port: 4000 }, resolve)
 );
-console.log(`🚀 Server ready at http://localhost:4000/`);
+console.log(`Serving host ${process.env.CLIENT_URL}`);

@@ -1,5 +1,6 @@
 import pg from 'pg'
-import 'dotenv/config';
+import {config} from 'dotenv'
+config({ path: `.env.${process.env.CURRENT_MODE}` });
 const {Pool} = pg
 
 
