@@ -48,9 +48,8 @@ export const resolvers = {
       try {
         const {
           texFile,
-          name,
-          pagesData,
-        }: { texFile: string; name: string; pagesData: string } = args;
+          docID
+        }: { texFile: string, docID: number} = args;
         const { id } = context.user;
         if (texFile.length != 0) {
           await fs.writeFile(`outputs/${id}/output.tex`, texFile, "utf-8");

@@ -34,6 +34,6 @@ export const typeDefs =  gql`
   
   type Mutation {
     CreateTexFile(inputJi: String!, name: String!, pagesData: String!): Output
-    CreatePDF(texFile: String!): OutputPdf
+    CreatePDF(texFile: String!, docID: Int!): OutputPdf
   }
 `;
