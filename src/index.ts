@@ -15,7 +15,7 @@ import { initializePassport, isAuthenticated } from "./auth/passport.js";
 import { pool } from "./database/postgres-config.js";
 import { config } from 'dotenv';
 config({ path: `.env.${process.env.CURRENT_MODE}` });
-const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
+/* const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
 const multer = require('multer');
 
 // Set up AWS credentials
@@ -25,7 +25,7 @@ const s3Client = new S3Client({
     accessKeyId: 'YOUR_ACCESS_KEY',
     secretAccessKey: 'YOUR_SECRET_ACCESS_KEY',
   },
-});
+} ); */
 
 import connectPgSimple from "connect-pg-simple";
 
