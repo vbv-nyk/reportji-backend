@@ -2,6 +2,7 @@
 import passport from "passport" 
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import {config} from 'dotenv'
+import { pool } from "../database/postgres-config.js";
 config({ path: `.env.${process.env.CURRENT_MODE}` });
  
 
@@ -11,8 +12,15 @@ export const initializePassport = () => {
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     callbackURL: process.env.GOOGLE_SUCCESS_CALLBACK_URI
   },
-  function(accessToken, refreshToken, profile, cb) {
-    console.log("We got access  to the following data" + profile);
+  async function(accessToken, refreshToken, profile, cb) {
+    try {
+      const data = await pool.query(`insert into users (user_id, username) 
+          values ($1, $2);
+        `, [profile.id, profile.displayName]);
+      console.log(data);
+    } catch(e) {
+        console.log("Error", e, "occurred");
+    }
     return cb(null, profile);
   }));
 
