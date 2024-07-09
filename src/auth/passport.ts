@@ -12,6 +12,7 @@ export const initializePassport = () => {
     callbackURL: process.env.GOOGLE_SUCCESS_CALLBACK_URI
   },
   function(accessToken, refreshToken, profile, cb) {
+    console.log("We got access  to the following data" + profile);
     return cb(null, profile);
   }));
 
