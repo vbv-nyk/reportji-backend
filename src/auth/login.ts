@@ -8,14 +8,14 @@ router.get("/google", passport.authenticate("google", { scope: ["profile"] }));
 
 router.get("/details", (req, res) => {
   if (!req.isAuthenticated()) {
-    console.log("User is not logged in");
+    // console.log("User is not logged in");
     res.json({
       loggedIn: false,
     });
     return;
   }
 
-    console.log("User is logged in");
+    // console.log("User is logged in");
   res.json({
     data: req.user,
   });

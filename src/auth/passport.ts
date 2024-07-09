@@ -17,9 +17,9 @@ export const initializePassport = () => {
       const data = await pool.query(`insert into users (user_id, username) 
           values ($1, $2);
         `, [profile.id, profile.displayName]);
-      console.log(data);
+      // console.log(data);
     } catch(e) {
-        console.log("Error", e, "occurred");
+        // console.log("Error", e, "occurred");
     }
     return cb(null, profile);
   }));
@@ -40,10 +40,10 @@ export const initializePassport = () => {
 
 export const isAuthenticated = (req,res,next) => {
   if(req.isAuthenticated()) {
-    console.log("User is authenticated");
+    // console.log("User is authenticated");
     next();
   } else {
-    console.log("User is not authenticated");
+    // console.log("User is not authenticated");
     res.status(401).json({message: 'unauthorized'});
   }
 }
