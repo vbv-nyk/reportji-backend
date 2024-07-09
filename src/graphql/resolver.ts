@@ -1,12 +1,19 @@
 import { exec, execSync } from "child_process";
 import fs from "fs/promises";
 import { pool } from "../database/postgres-config.js";
+import { QueryResult } from "pg";
+import { create } from "domain";
 
+type Document = {
+  name: string;
+  pages: string;
+  url: string;
+};
 export const resolvers = {
   Mutation: {
     CreateTexFile: async (parent, args, context, info) => {
       try {
-        const { inputJi,name,pagesData } = args;
+        const { inputJi, name, pagesData } = args;
         const { id } = context.user;
         fs.mkdir(`outputs/${id}`, { recursive: true });
         await fs.writeFile(`outputs/${id}/input.ji`, inputJi, "utf-8");
@@ -14,11 +21,16 @@ export const resolvers = {
         const data = await fs.readFile("output.tex");
         const tex = data.toString();
 
-        console.log(pagesData);
-      const create_pdf = await pool.query(`insert into documents (user_id, name) 
-          values ($1, $2);
-        `, [id, name]);
+        const create_pdf = await pool.query(
+          `insert into documents (user_id, name, pages) 
+          values ($1, $2, $3)
+          returning document_id;
+        `,
+          [id, name, pagesData]
+        );
+        console.log(create_pdf);
         return {
+          document_id: create_pdf.rows[0].document_id,
           err: false,
           errMsg: "None",
           tex,
@@ -34,9 +46,13 @@ export const resolvers = {
     },
     CreatePDF: async (parent, args, context, info) => {
       try {
-        const { texFile, name, pagesData }: {texFile: string, name: string, pagesData: string} = args;
+        const {
+          texFile,
+          name,
+          pagesData,
+        }: { texFile: string; name: string; pagesData: string } = args;
         const { id } = context.user;
-        if(texFile.length != 0) {
+        if (texFile.length != 0) {
           await fs.writeFile(`outputs/${id}/output.tex`, texFile, "utf-8");
         }
         execSync(
@@ -48,7 +64,9 @@ export const resolvers = {
         execSync(
           `rm outputs/${id}/output.aux outputs/${id}/output.lof outputs/${id}/output.log outputs/${id}/output.toc outputs/${id}/output.out`
         );
-        let data: string = await fs.readFile(`outputs/${id}/output.pdf`, {encoding: "base64"});
+        let data: string = await fs.readFile(`outputs/${id}/output.pdf`, {
+          encoding: "base64",
+        });
         return {
           err: false,
           errMsg: "None",
@@ -65,12 +83,37 @@ export const resolvers = {
   },
   Query: {
     UserDetails: (parent, args, context, info) => {
-      console.log("Authenticated User:", context.user);
       const { id, displayName } = context.user;
       return {
         id,
         displayName,
       };
+    },
+    RetrieveDocuments: async (parent, args, context, info) => {
+      const { id } = context.user;
+      try {
+        const data: QueryResult<Document> = await pool.query(
+          `select * from documents 
+          where user_id = $1;
+        `,
+          [id]
+        );
+        const documents: Document[] = data.rows.map((document): Document => {
+          const { name, pages, url } = document;
+          return {
+            name,
+            pages,
+            url,
+          };
+        });
+        return documents;
+      } catch (e) {
+        return {
+          name: '',
+          pages: '',
+          url: ''
+        }
+      }
     },
   },
 };

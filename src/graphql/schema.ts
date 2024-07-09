@@ -12,6 +12,7 @@ export const typeDefs =  gql`
     err: Boolean,
     errMsg: String,
     tex: String
+    document_id: Int
   }
 
   type OutputPdf {
@@ -19,9 +20,16 @@ export const typeDefs =  gql`
     errMsg: String,
     pdf: String
   }
+  
+  type Document {
+    pages: String
+    name: String
+    url: String
+  }
 
   type Query {
     UserDetails: User,
+    RetrieveDocuments: [Document],
   } 
   
   type Mutation {
