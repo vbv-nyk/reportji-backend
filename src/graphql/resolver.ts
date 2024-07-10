@@ -15,7 +15,7 @@ export const resolvers = {
   Mutation: {
     CreateTexFile: async (parent, args, context, info) => {
       try {
-        const { inputJi, name, pagesData } = args;
+        const { inputJi, name, pagesData, docID } = args;
         const { id } = context.user;
         fs.mkdir(`outputs/${id}`, { recursive: true });
         await fs.writeFile(`outputs/${id}/input.ji`, inputJi, "utf-8");
@@ -23,26 +23,43 @@ export const resolvers = {
         const data = await fs.readFile("output.tex");
         const tex = data.toString();
 
-        const create_pdf = await pool.query(
-          `insert into documents (user_id, name, pages) 
+        if (docID) {
+          const update_pdf = await pool.query(
+            `update documents 
+              set pages = $1, name = $2
+              where user_id = $3 and document_id = $4
+              returning document_id
+            `, [pagesData, name ,id, docID]
+          )
+          console.log(update_pdf);
+          return {
+            document_id: update_pdf.rows[0].document_id,
+            err: false,
+            errMsg: "None",
+            tex,
+          };
+        } else {
+          const create_pdf = await pool.query(
+            `insert into documents (user_id, name, pages) 
           values ($1, $2, $3)
           returning document_id;
         `,
-          [id, name, pagesData]
-        );
-        console.log(create_pdf);
-        return {
-          document_id: create_pdf.rows[0].document_id,
-          err: false,
-          errMsg: "None",
-          tex,
-        };
+            [id, name, pagesData]
+          );
+          return {
+            document_id: create_pdf.rows[0].document_id,
+            err: false,
+            errMsg: "None",
+            tex,
+          };
+        }
+
       } catch (err) {
         console.log(err);
         return {
           err: true,
           errMessage: err,
-          tex: "Error",
+          tex: `Error ${err}`,
         };
       }
     },
@@ -68,7 +85,7 @@ export const resolvers = {
 
         let pdf = await fs.readFile(`outputs/${id}/output.pdf`);
         const client = new S3Client({ region: "ap-south-1", credentials: { accessKeyId: process.env.AWS_ACCESS_KEY_ID, secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY } });
-        const command = new PutObjectCommand({ Body: pdf, Key: `${id}/${docID}`, Bucket: "reportji", ContentType: "application/pdf"});
+        const command = new PutObjectCommand({ Body: pdf, Key: `${id}/${docID}`, Bucket: "reportji", ContentType: "application/pdf" });
         const response = await client.send(command);
         const url = `https://reportji.s3.ap-south-1.amazonaws.com/${id}/${docID}`;
         await pool.query(`
