@@ -25,11 +25,13 @@ export const typeDefs =  gql`
     pages: String
     name: String
     url: String
+    document_id: Int
   }
 
   type Query {
     UserDetails: User,
     RetrieveDocuments: [Document],
+    DocumentByID(document_id: Int!): Document,
   } 
   
   type Mutation {
