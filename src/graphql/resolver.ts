@@ -65,23 +65,21 @@ export const resolvers = {
         execSync(
           `rm outputs/${id}/output.aux outputs/${id}/output.lof outputs/${id}/output.log outputs/${id}/output.toc outputs/${id}/output.out`
         );
-        let data: string = await fs.readFile(`outputs/${id}/output.pdf`, {
-          encoding: "base64",
-        });
+
         let pdf = await fs.readFile(`outputs/${id}/output.pdf`);
-        // a client can be shared by different commands.
         const client = new S3Client({ region: "ap-south-1", credentials: { accessKeyId: process.env.AWS_ACCESS_KEY_ID, secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY } });
         const command = new PutObjectCommand({ Body: pdf, Key: `${id}/${docID}`, Bucket: "reportji", ContentType: "application/pdf"});
-        try {
-          const response = await client.send(command);
-          console.log(response);
-        } catch (e) {
-          console.log("Error: ", e);
-        }
+        const response = await client.send(command);
+        const url = `https://reportji.s3.ap-south-1.amazonaws.com/${id}/${docID}`;
+        await pool.query(`
+          update documents
+          set url = $1 
+          where user_id = $2 and document_id = $3
+          `, [url, id, docID]);
         return {
           err: false,
           errMsg: "None",
-          pdf: data,
+          pdf: url,
         };
       } catch (err) {
         return {
