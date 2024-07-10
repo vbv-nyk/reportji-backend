@@ -3,6 +3,7 @@ import fs from "fs/promises";
 import { pool } from "../database/postgres-config.js";
 import { QueryResult } from "pg";
 import { create } from "domain";
+import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 
 type Document = {
   name: string;
@@ -50,7 +51,7 @@ export const resolvers = {
         const {
           texFile,
           docID
-        }: { texFile: string, docID: number} = args;
+        }: { texFile: string, docID: number } = args;
         const { id } = context.user;
         if (texFile.length != 0) {
           await fs.writeFile(`outputs/${id}/output.tex`, texFile, "utf-8");
@@ -67,6 +68,16 @@ export const resolvers = {
         let data: string = await fs.readFile(`outputs/${id}/output.pdf`, {
           encoding: "base64",
         });
+        let pdf = await fs.readFile(`outputs/${id}/output.pdf`);
+        // a client can be shared by different commands.
+        const client = new S3Client({ region: "ap-south-1", credentials: { accessKeyId: process.env.AWS_ACCESS_KEY_ID, secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY } });
+        const command = new PutObjectCommand({ Body: pdf, Key: `${id}/${docID}`, Bucket: "reportji", ContentType: "application/pdf"});
+        try {
+          const response = await client.send(command);
+          console.log(response);
+        } catch (e) {
+          console.log("Error: ", e);
+        }
         return {
           err: false,
           errMsg: "None",
@@ -89,7 +100,7 @@ export const resolvers = {
         displayName,
       };
     },
-    RetrieveDocuments: async (parents, args, context,info) => {
+    RetrieveDocuments: async (parents, args, context, info) => {
       const { id } = context.user;
       try {
         const data: QueryResult<Document> = await pool.query(
@@ -99,7 +110,7 @@ export const resolvers = {
           [id]
         );
         const documents: Document[] = data.rows.map((document): Document => {
-          const { name, pages, url, document_id} = document;
+          const { name, pages, url, document_id } = document;
           return {
             name,
             pages,
@@ -116,9 +127,9 @@ export const resolvers = {
         }
       }
     },
-  DocumentByID: async (parent, args, context, info) => {
+    DocumentByID: async (parent, args, context, info) => {
       const { id } = context.user;
-      const {document_id} = args;
+      const { document_id } = args;
       try {
         const data: QueryResult<Document> = await pool.query(
           `select * from documents 
