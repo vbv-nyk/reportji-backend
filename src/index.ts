@@ -93,6 +93,6 @@ app.use(
 
 // Modified server startup
 await new Promise<void>((resolve) =>
-  httpServer.listen({ port: 4000 }, resolve)
+  httpServer.listen({ port: process.env.PORT }, resolve)
 );
 console.log(`Serving host ${process.env.CLIENT_URL}`);

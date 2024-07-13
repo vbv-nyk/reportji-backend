@@ -64,12 +64,12 @@ export const resolvers = {
       }
     },
     CreatePDF: async (parent, args, context, info) => {
-      try {
+        const { id } = context.user;
         const {
           texFile,
           docID
         }: { texFile: string, docID: number } = args;
-        const { id } = context.user;
+      try {
         if (texFile.length != 0) {
           await fs.writeFile(`outputs/${id}/output.tex`, texFile, "utf-8");
         }
@@ -79,16 +79,16 @@ export const resolvers = {
         execSync(
           `pdflatex -interaction=nonstopmode -output-directory=outputs/${id} output.tex `
         );
-        execSync(
-          `rm outputs/${id}/output.aux outputs/${id}/output.lof outputs/${id}/output.log outputs/${id}/output.toc outputs/${id}/output.out`
-        );
+        // execSync(
+          // `rm outputs/${id}/output.aux outputs/${id}/output.lof outputs/${id}/output.log outputs/${id}/output.toc outputs/${id}/output.out`
+        // );
 
         let pdf = await fs.readFile(`outputs/${id}/output.pdf`);
         const client = new S3Client({ region: "ap-south-1", credentials: { accessKeyId: process.env.AWS_ACCESS_KEY_ID, secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY } });
         const command = new PutObjectCommand({ Body: pdf, Key: `${id}/${docID}`, Bucket: "reportji", ContentType: "application/pdf" });
         const response = await client.send(command);
         const url = `https://reportji.s3.ap-south-1.amazonaws.com/${id}/${docID}`;
-        await pool.query(`
+        const new_url = await pool.query(`
           update documents
           set url = $1 
           where user_id = $2 and document_id = $3
@@ -99,10 +99,11 @@ export const resolvers = {
           pdf: url,
         };
       } catch (err) {
+        const url = `https://reportji.s3.ap-south-1.amazonaws.com/${id}/${docID}`;
         return {
           err: true,
           errMessage: err,
-          pdf: `Error when generating pdf ${err}`,
+          pdf:url ,
         };
       }
     },

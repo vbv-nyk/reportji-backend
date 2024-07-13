@@ -19,6 +19,7 @@ export const typeDefs =  gql`
     err: Boolean,
     errMsg: String,
     pdf: String
+    document_id: Int
   }
   
   type Document {
